@@ -2,22 +2,21 @@
 
 import streamlit as st
 
-import config
-
 # How each column shows up in the table
 COLUMNS = {
     "your_rank": st.column_config.NumberColumn("Your rank"),
     "prestige_rank": st.column_config.NumberColumn("Prestige rank"),
-    "change": st.column_config.NumberColumn("Moved", help="Prestige rank minus your rank. Positive = moved up."),
+    "change": st.column_config.NumberColumn("vs. prestige", format="%+d",
+                                             help="Prestige rank minus your rank. Positive = ranks higher on YOUR list."),
     "name": st.column_config.TextColumn("School", width="large"),
     "state": "State",
     "control_label": "Type",
-    "score": st.column_config.ProgressColumn("Score", min_value=0, max_value=100, format="%.0f"),
-    "net_price": st.column_config.NumberColumn("Net price ($)", format="localized"),
+    "score": st.column_config.ProgressColumn("Match score", min_value=0, max_value=100, format="%.0f"),
+    "net_price": st.column_config.NumberColumn("Price/yr after aid ($)", format="localized"),
     "grad_pct": st.column_config.NumberColumn("Grad rate", format="%.0f%%"),
-    "pell_grad_pct": st.column_config.NumberColumn("Pell grad rate", format="%.0f%%"),
-    "earnings_10yr": st.column_config.NumberColumn("Earnings ($)", format="localized"),
-    "median_debt": st.column_config.NumberColumn("Median debt ($)", format="localized"),
+    "pell_grad_pct": st.column_config.NumberColumn("Low-income grad rate", format="%.0f%%"),
+    "earnings_10yr": st.column_config.NumberColumn("Salary at 10 yrs ($)", format="localized"),
+    "median_debt": st.column_config.NumberColumn("Typical debt ($)", format="localized"),
 }
 
 
@@ -32,30 +31,15 @@ def build_table(df, scores):
     return t.sort_values("your_rank")
 
 
-def show_bu(table):
-    """Three headline numbers for Boston University."""
-    bu = table[table["unitid"] == config.BU_UNITID]
-    if bu.empty:
-        st.caption("Boston University is hidden by the current filters.")
-        return
-    bu = bu.iloc[0]
-    a, b, c = st.columns(3)
-    a.metric("Boston University: your rank", f"#{bu['your_rank']} of {len(table)}")
-    b.metric("BU: prestige rank", f"#{bu['prestige_rank']}")
-    c.metric("BU: score", f"{bu['score']:.0f} / 100")
-
-
-def render(df, scores):
-    st.subheader("Your ranking")
+def render(table):
+    st.subheader("The full list")
     st.write(
-        "Schools re-ranked by the weights in the sidebar. **Moved** compares your "
-        "rank with a prestige-only rank."
+        "Every college that fits your filters, ranked by what you said matters. "
+        "**vs. prestige** shows how many spots a school moves compared with a list "
+        "that only cares about reputation (like many famous rankings)."
     )
-    table = build_table(df, scores)
-    show_bu(table)
-    n = st.slider("Show top", 10, 200, 50, step=10)
+    n = st.slider("How many to show", 10, 200, 50, step=10)
     st.dataframe(
         table.head(n)[list(COLUMNS)], column_config=COLUMNS,
         hide_index=True, width="stretch", height=600,
     )
-    return table

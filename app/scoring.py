@@ -11,30 +11,48 @@ How a school's score works:
 import numpy as np
 import pandas as pd
 
-# key -> (column in results.csv, True if higher is better, label for the UI)
+# key -> (column in results.csv, True if higher is better, label for the UI, short name)
 CRITERIA = {
-    "affordability": ("net_price", False, "Affordability (low net price)"),
-    "earnings": ("earnings_10yr", True, "Earnings 10 years out"),
-    "graduation": ("grad_rate", True, "Graduation rate"),
-    "low_debt": ("median_debt", False, "Low student debt"),
-    "mobility": ("pell_grad_rate", True, "Social mobility (Pell students graduate)"),
-    "prestige": ("prestige_score", True, "Prestige (selectivity + wealth)"),
+    "affordability": ("net_price", False, "💸 Low price after financial aid", "price"),
+    "earnings": ("earnings_10yr", True, "🚀 High salary after college", "salary"),
+    "graduation": ("grad_rate", True, "🎓 Students actually graduate", "graduation rate"),
+    "low_debt": ("median_debt", False, "🧾 Leave with less debt", "debt"),
+    "mobility": ("pell_grad_rate", True, "🌱 Low-income students succeed too", "low-income grad rate"),
+    "prestige": ("prestige_score", True, "🏛️ Big-name reputation", "reputation"),
 }
 
-# Starting points for the weight sliders (0 = ignore, 10 = very important)
+# What each criterion means, shown as a (?) tooltip next to its control
+HELP = {
+    "affordability": "What families actually pay per year after grants and scholarships, not the sticker price.",
+    "earnings": "Typical (median) salary of former students 10 years after they started college.",
+    "graduation": "Share of students who finish a degree within 6 years.",
+    "low_debt": "Typical amount of student loans owed when students graduate.",
+    "mobility": "Graduation rate for students with Pell grants (from lower-income families).",
+    "prestige": "How selective and wealthy the school is: admit rate, SAT scores, faculty pay, spending.",
+}
+
+# How much a criterion matters, from the user's point of view -> weight
+LEVELS = {0: "Don't care", 2: "A little", 5: "Matters", 8: "A lot", 10: "Must have"}
+
+# Starting points for the weights (every value must be a key of LEVELS)
 PRESETS = {
-    "Student outcomes": {"affordability": 6, "earnings": 6, "graduation": 6,
-                         "low_debt": 4, "mobility": 8, "prestige": 0},
-    "Prestige only (like many rankings)": {"affordability": 0, "earnings": 0, "graduation": 0,
-                                           "low_debt": 0, "mobility": 0, "prestige": 10},
-    "Equal weights": {key: 5 for key in CRITERIA},
+    "⚖️ A bit of everything": {"affordability": 5, "earnings": 5, "graduation": 5,
+                               "low_debt": 5, "mobility": 5, "prestige": 2},
+    "💸 Graduate without drowning in debt": {"affordability": 10, "earnings": 2, "graduation": 5,
+                                            "low_debt": 10, "mobility": 2, "prestige": 0},
+    "🚀 Get the best-paying career": {"affordability": 2, "earnings": 10, "graduation": 5,
+                                     "low_debt": 2, "mobility": 0, "prestige": 2},
+    "🌱 First in my family to go to college": {"affordability": 8, "earnings": 5, "graduation": 8,
+                                              "low_debt": 5, "mobility": 10, "prestige": 0},
+    "🏛️ Only the big names (like most rankings)": {"affordability": 0, "earnings": 0, "graduation": 0,
+                                                   "low_debt": 0, "mobility": 0, "prestige": 10},
 }
 
 
 def percentiles(df):
     """One column per criterion, each 0-1. Missing values get 0.5 (neutral)."""
     out = pd.DataFrame(index=df.index)
-    for key, (col, higher_is_better, _) in CRITERIA.items():
+    for key, (col, higher_is_better, _, _) in CRITERIA.items():
         out[key] = df[col].rank(pct=True, ascending=higher_is_better).fillna(0.5)
     return out
 
@@ -83,3 +101,17 @@ def fragility(pcts, weights, n_runs=500, wiggle=0.2, top_n=20, seed=0):
     }, index=pcts.index)
     overlap = in_run_top[in_base_top].sum(axis=0)    # one number per run
     return summary, overlap
+
+
+def letter_grade(pct):
+    """Turn a percentile (0-1) into a report-card grade, graded on a curve."""
+    for cutoff, grade in [(0.95, "A+"), (0.85, "A"), (0.70, "B"), (0.50, "C"), (0.30, "D")]:
+        if pct >= cutoff:
+            return grade
+    return "F"
+
+
+def strengths(pct_row, weights, n=2):
+    """The criteria that add the most to this school's score (percentile x weight)."""
+    cared = [key for key in pct_row.index if weights[key] > 0]
+    return sorted(cared, key=lambda key: pct_row[key] * weights[key], reverse=True)[:n]

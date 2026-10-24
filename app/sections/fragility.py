@@ -35,17 +35,19 @@ def rank_range_chart(top):
 
 
 def render(df, pcts, weights):
-    st.subheader("Fragility check")
+    st.subheader("How solid is this ranking?")
     st.write(
-        f"We re-run the ranking {N_RUNS} times, nudging every weight up or down by a "
-        "random amount. If the top of the list reshuffles a lot, the ranking depends "
-        "on small, arbitrary choices more than on real differences between schools."
+        f"Would your #1 still be #1 if you cared *slightly* more about price, or slightly "
+        f"less about salary? We re-ran your ranking {N_RUNS} times, nudging each priority up "
+        "or down a little at random. Schools that stay near the top are solid picks. If the "
+        "list reshuffles a lot, the differences between those schools are tiny, so don't "
+        "sweat being #4 instead of #2. (This is true of famous rankings too!)"
     )
     wiggle = st.slider("How much to nudge each weight (±%)", 5, 50, 20, step=5) / 100
 
     summary, overlap = scoring.fragility(pcts, weights, n_runs=N_RUNS, wiggle=wiggle, top_n=TOP_N)
     if summary is None:
-        st.info("Set at least one weight above zero.")
+        st.info("Pick at least one thing that matters to you in the sidebar.")
         return
 
     summary = summary.join(df[["name", "state"]])

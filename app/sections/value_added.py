@@ -38,13 +38,14 @@ def model_scores_table():
 
 
 def render(df):
-    st.subheader("Overperformers")
+    st.subheader("Hidden gems: colleges that beat the odds")
     st.write(
-        "We predicted each school's outcome from **who it enrolls** (% Pell, % first-gen, "
-        "SAT, admit rate) and **its resources** (spending, net price), using a random "
-        "forest. Schools at the top do much better than expected."
+        "Some colleges do way better than you'd expect. We used a machine-learning model "
+        "(a random forest) to predict each school's results from **who it enrolls** "
+        "(% low-income, % first-gen, SAT, admit rate) and **how much money it has**. "
+        "The schools below beat that prediction by the most, so they're doing something right."
     )
-    choice = st.radio("Outcome", list(TARGETS), horizontal=True)
+    choice = st.radio("Beat the odds on...", list(TARGETS), horizontal=True)
     target = TARGETS[choice]
     col = f"residual_{target}"
 

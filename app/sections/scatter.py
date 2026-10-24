@@ -25,11 +25,11 @@ def school_picker(df):
 
 
 def render(df):
-    st.subheader("Prestige vs. outcomes")
+    st.subheader("Fame vs. results")
     st.write(
-        "Each dot is a school. Prestige combines admit rate, SAT, faculty pay and "
-        "spending. The \"actual minus predicted\" options show how much a school beats "
-        "what our model expected for its students and resources."
+        "Is a famous name the same as a good outcome? Each dot is a college. Further right = "
+        "more prestige (hard to get in, rich). Higher up = better results for students. "
+        "If prestige were everything, all the dots would sit on a neat diagonal line."
     )
     left, right = st.columns(2)
     y_label = left.selectbox("Y-axis", list(Y_OPTIONS))

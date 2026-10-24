@@ -47,8 +47,9 @@ src/
 app/
   app.py             Streamlit layout only
   scoring.py         weighted score + Monte Carlo fragility math
-  sections/          one file per tab: ranking, fragility, scatter,
-                     value_added (overperformers), map_view, about, sidebar
+  sections/          one file per tab: matches (top-3 cards), ranking (full list),
+                     report_card, map_view, value_added (hidden gems), scatter,
+                     fragility, about; plus sidebar (priorities + filters)
 data/                generated CSVs
 figures/             generated charts (.png for slides, .html interactive)
 ```
@@ -93,8 +94,13 @@ debt and low net price.
 - Boston University: prestige score 97, outcome score 76. Graduation rate exactly
   matches prediction (89.5%); earnings $4.4k below prediction.
 
-**The app (`app/`).** Weight sliders re-rank all 1,405 schools live, compared with a
-prestige-only rank. A fragility check reruns the ranking 500 times with each weight
+**The app (`app/`).** Built for high school students. Pick a goal ("graduate without
+debt", "first in my family"...), set how much each thing matters (Don't care → Must
+have), and filter by budget, state, size and how hard it is to get in. All 1,405
+schools re-rank live, compared with a prestige-only rank. Your top 3 show up as
+cards that explain *why* they rank there, with plain-language stats and a 💎 badge
+for hidden gems. A report-card tab grades any school A+ to F (on a curve) and
+compares up to 3 side by side. A fragility check reruns the ranking 500 times with each weight
 nudged ±20% and shows how much the top 20 reshuffles. The app also has a prestige
 vs. outcomes scatter (BU highlighted, any school selectable), an overperformers
 table, a US map, and a limitations page.

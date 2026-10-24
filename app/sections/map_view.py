@@ -10,8 +10,8 @@ BLUES = ["#cde2fb", "#86b6ef", "#3987e5", "#1c5cab", "#0d366b"]
 
 
 def render(table):
-    st.subheader("Map")
-    st.write("Darker dots score higher with your weights. Bigger dots have more undergrads.")
+    st.subheader("Where are your matches?")
+    st.write("Darker dots are better matches for you. Bigger dots are bigger schools. Hover for details.")
     # scatter_geo draws the map itself: no internet map tiles or WebGL needed
     d = table.dropna(subset=["lat", "lon", "undergrads"])
     fig = px.scatter_geo(
